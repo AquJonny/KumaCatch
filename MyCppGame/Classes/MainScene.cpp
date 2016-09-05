@@ -10,7 +10,11 @@
 
 USING_NS_CC;
 
+//水果出现的最高点Y坐标差值
 const int FRUITS_TOP_POINT = 40;
+
+//水果刷新频率 20帧 ＊多少秒？？0.3秒？
+const int FRUITS_REFRESH_RATE = 20;
 
 Mainscene::Mainscene()
 :_Kuma(nullptr)
@@ -20,7 +24,9 @@ Mainscene::Mainscene()
 
 Mainscene::~Mainscene()
 {
-
+    //把Player释放掉 ＊为什么只释放player？？？
+    CC_SAFE_RELEASE_NULL(_Kuma);
+    
 }
 
 Scene* Mainscene::creatScene()
@@ -107,25 +113,61 @@ bool Mainscene::init()
     //将监听callback登陆到导演node里
     director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(TouchEvent, this);
     
+    //登录updata方法，在每一帧进行调用
+    this->scheduleUpdate();
+    
     return true;
 }
 
 Sprite* Mainscene::addFruits()
 {
     auto size       = Director::getInstance()->getWinSize();
+    
+    //随机获取一个数字，范围是0～COUNT_MAX（最大水果数）
     int  Type       = rand() % static_cast<int>(FruitsType::COUNT_MAX);
     
+    //根据获得的数字创建文件名，水果枚举列表需要和图片文件的序号对应
     std::string filename = StringUtils::format("nonretina/fruit%d.png",Type);
     auto fruits     = Sprite::create(filename);
     
+    //设置Tag便于之后查找
     fruits->setTag(Type);
-    auto fruitsXPoint    = rand() % static_cast<int>(size.width);
     
-    fruits->setPosition(Point(fruitsXPoint,size.height - FRUITS_TOP_POINT));
+    //Y轴固定，X轴随机的方式放置水果
+    auto fruitsXPoint    = rand() % static_cast<int>(size.width - 80);
+    fruits->setPosition(Point(fruitsXPoint + 40, size.height - FRUITS_TOP_POINT));
     
+    //把水果放到屏幕中，将屏幕中存在的水果保存至Fruits的仓库中
     this->addChild(fruits);
-    
     _Fruits.pushBack(fruits);
+
     return fruits;
     
+}
+
+bool Mainscene::removeFruits(cocos2d::Sprite *fruits)
+{
+    //意图删除的对象是否存在于仓库中
+    if(_Fruits.contains(fruits))
+    {
+        //YES
+        //从父类中删除（从Scene中去除）
+        fruits->removeFromParent();
+        
+        //从仓库中删除
+        _Fruits.eraseObject(fruits);
+        
+        return true;
+    }
+    
+    return false;
+}
+
+void Mainscene::update(float dt)
+{
+    int random = rand() % FRUITS_REFRESH_RATE;
+    if(random == 0)
+    {
+        this->addFruits();
+    }
 }
