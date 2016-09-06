@@ -16,6 +16,10 @@ const int FRUITS_TOP_POINT = 40;
 //水果刷新频率 20帧 ＊多少秒？？0.3秒？
 const int FRUITS_REFRESH_RATE = 20;
 
+//角色&水果的可活动范围偏移量(角色图的二分之一宽度)(单位:像素)
+const int ACTIVE_ENABLE_OFFSET = 30;
+
+
 Mainscene::Mainscene()
 :_Kuma(nullptr)
 {
@@ -97,7 +101,7 @@ bool Mainscene::init()
         //计算新坐标，取两点之间的区间
         Point Target = _Kuma->getPosition() + Offset;
         
-        Target = Target.getClampPoint(Point(30, _Kuma->getPosition().y), Point(size.width - 30, _Kuma->getPosition().y));
+        Target = Target.getClampPoint(Point(ACTIVE_ENABLE_OFFSET, _Kuma->getPosition().y), Point(size.width - ACTIVE_ENABLE_OFFSET, _Kuma->getPosition().y));
         
         _Kuma->setPosition(Target);
         
@@ -134,8 +138,30 @@ Sprite* Mainscene::addFruits()
     fruits->setTag(Type);
     
     //Y轴固定，X轴随机的方式放置水果
-    auto fruitsXPoint    = rand() % static_cast<int>(size.width - 80);
-    fruits->setPosition(Point(fruitsXPoint + 40, size.height - FRUITS_TOP_POINT));
+    auto fruitsXPoint    = rand() % static_cast<int>(size.width - ( ACTIVE_ENABLE_OFFSET * 2 ));
+    fruits->setPosition(Point(fruitsXPoint + ACTIVE_ENABLE_OFFSET, size.height - FRUITS_TOP_POINT));
+    
+	//水果的移动和动作的追加
+	//出现后等待3秒
+	auto delay     = DelayTime::create(3.0f);
+	
+	//3秒内掉落至指定坐标
+	auto move      = MoveTo::create(3.0f, Point(fruitsXPoint, (0 - ACTIVE_ENABLE_OFFSET)));
+	
+	//每秒旋转360度
+	auto rotate    = RotateTo::create(1.0f, 360.0f);
+	
+	//循环旋转
+	auto rotateRepeat = RepeatForever::create(rotate);
+	
+	//旋转与下落同时进行
+	auto dropAction   = Spawn::create(move, rotateRepeat);
+	
+	//按照:等待3秒->下落并旋转 的顺序进行动作
+	auto active       = Sequence::create(delay, dropAction, NULL);
+	
+	fruits->runAction(active);
+
     
     //把水果放到屏幕中，将屏幕中存在的水果保存至Fruits的仓库中
     this->addChild(fruits);
@@ -165,9 +191,46 @@ bool Mainscene::removeFruits(cocos2d::Sprite *fruits)
 
 void Mainscene::update(float dt)
 {
+	//是否删除水果
+	bool removeEnable = false;
+	
+	//随机添加水果
     int random = rand() % FRUITS_REFRESH_RATE;
     if(random == 0)
     {
         this->addFruits();
     }
+    
+    //获取熊的坐标
+    auto kumaX = _Kuma->getPosition().x;
+    auto kumaY = _Kuma->getPosition().y;
+    
+    for( cocos2d::Sprite* fruits : _Fruits )
+    {
+    	//获取水果的坐标
+		auto fruitsX = fruits->getPosition().x;
+		auto fruitsY = fruits->getPosition().y;
+
+		//判断水果是否被熊接到(坐标区域碰撞)
+		//判断水果是否掉地(下落出屏幕)
+		if( fruitsY > (kumaY - ACTIVE_ENABLE_OFFSET) &&
+			fruitsY < (kumaY + ACTIVE_ENABLE_OFFSET) )
+		{
+			if( fruitsX > (kumaX - ACTIVE_ENABLE_OFFSET) &&
+				fruitsX < (kumaX + ACTIVE_ENABLE_OFFSET) )
+			{
+				removeEnable = true;
+			}
+		}
+		else if( fruitsY <= (0 - ACTIVE_ENABLE_OFFSET) )
+		{
+			removeEnable = true;
+		}
+		
+		//删除水果
+		if( removeEnable == true )
+		{
+	        this->removeFruits(fruits);
+		}
+	}
 }
