@@ -65,6 +65,11 @@ private:
     //@return  是否消除成功
     bool removeFruits(cocos2d::Sprite* fruits);
     
+    //接住水果方法
+    //@para    接住的对象（水果）
+    //@return  是否处理成功
+    bool catchFruits(cocos2d::Sprite* fruits);
+    
 };
 
 
