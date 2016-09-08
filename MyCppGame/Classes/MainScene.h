@@ -37,10 +37,10 @@ public:
     CC_SYNTHESIZE_RETAIN(cocos2d::Sprite*, _Kuma, Kuma);
     
     //创建用于显示分数的Lable
-    CC_SYNTHESIZE_RETAIN(cocos2d::Lable*, _ScoresLable, ScoresLables);
+    CC_SYNTHESIZE_RETAIN(cocos2d::Label*, _ScoresLabel, ScoresLabel);
 
 	//创建用于显示时间的Lable
-	CC_SYNTHESIZE_RETAIN(cocos2d::Lable*, _TimeLable, TimeLable);
+	CC_SYNTHESIZE_RETAIN(cocos2d::Label*, _TimeLabel, TimeLabel);
 	
     //getFruits(),setFruits()方法声明 ＊没有retain处理，主处理结束后被release！！！
     //cocos2d::Vector<T> 并不是 cocos2d::Object 的子类，
@@ -52,7 +52,10 @@ public:
     CC_SYNTHESIZE(int, _Scores, Scoress);
     
     //创建显示用时间变量,全局
-    CC_SYNTHESIZE(int, _Time, Time);
+    CC_SYNTHESIZE(float, _Time, Time);
+    
+    //创建管理用状态寄存器（画面状态&游戏状态）
+    CC_SYNTHESIZE(int, _GameLayer, GameLayer);
     
     //画面更新 ＊dt是什么？？=>deltaTime =>单位为秒
     //函数名称updata不可以随便改动，因为需要使用scheduleUpdata方法进行登录
@@ -70,6 +73,17 @@ private:
         COUNT_MAX   //最大値
     };
 
+    enum class SceneLayer
+    {
+        title,      //标题
+        game,       //游戏中
+        result,     //结果显示
+        setting,    //设定
+        
+        COUNT_MAX   //最大值
+        
+    };
+    
     //水果添加方法
     //@para    无
     //@return  创建之后的对象（水果）

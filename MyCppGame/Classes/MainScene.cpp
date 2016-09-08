@@ -22,11 +22,11 @@ const int ACTIVE_ENABLE_OFFSET = 30;
 
 Mainscene::Mainscene()
 :_Kuma(nullptr),
-_Fruits(nullptr),
 _Scores(0),
-_ScoresLable(nullptr),
+_ScoresLabel(nullptr),
 _Time(60),
-_TimeLable(nullptr)
+_TimeLabel(nullptr),
+_GameLayer(static_cast<int>(SceneLayer::title))
 {
     
 }
@@ -35,8 +35,8 @@ Mainscene::~Mainscene()
 {
     //把Player释放掉 ＊为什么只释放player？？？=>定义player时候调用了retain方法，为其计数＋1了
     CC_SAFE_RELEASE_NULL(_Kuma);
-    CC_SAFE_RELEASE_NULL(_ScoresLable);
-    CC_SAFE_RELEASE_NULL(_TimeLable);
+    CC_SAFE_RELEASE_NULL(_ScoresLabel);
+    CC_SAFE_RELEASE_NULL(_TimeLabel);
 }
 
 Scene* Mainscene::creatScene()
@@ -68,20 +68,20 @@ bool Mainscene::init()
     _Kuma->setPosition(Point(size.width/2.0, size.height - 450));
     this->addChild(_Kuma);
     
-    TTFConfig ScroesTTF("Marker Felt.ttf", 20, SHADOW);
+    TTFConfig ScroesTTF("Marker Felt.ttf", 20);
     
     //创建记分板(Lable)
-    auto scroesLable = Lable::createWithTTF(ScroesTTF, "Scroes 0");
+    auto scroesLabel = Label::createWithTTF(ScroesTTF, "Scroes 0");
     //create方法的返回值是一个自动释放的文本对象。->因此需要set到_ScoresLable中?? 
-    _ScoresLable->setScoresLables(scroesLable);
-    _ScoresLable->setPosition(Point(size.width*0.6, size.height - FRUITS_TOP_POINT/2));
-    this->addChild(_ScoresLable, 1);
+    this->setScoresLabel(scroesLabel);
+    _ScoresLabel->setPosition(Point(size.width*0.75, size.height - FRUITS_TOP_POINT/2));
+    this->addChild(_ScoresLabel, 1);
     
     //创建计时器(Lable)
-    auto timeLable   = Lable::createWithTTF(ScroesTTF, "Time  60");
-    _TimeLable->setTimeLable(timeLable);
-    _TimeLable->setPosition(Point(size.width*0.3, size.height - FRUITS_TOP_POINT/2));
-    this->addChild(_TimeLable, 1);
+    auto timeLabel   = Label::createWithTTF(ScroesTTF, "Time  60");
+    this->setTimeLabel(timeLabel);
+    _TimeLabel->setPosition(Point(size.width*0.25, size.height - FRUITS_TOP_POINT/2));
+    this->addChild(_TimeLabel, 1);
     
     //创建触屏监听事件
     auto TouchEvent = EventListenerTouchOneByOne::create();
@@ -138,6 +138,8 @@ bool Mainscene::init()
     //将监听callback登陆到导演node里
     director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(TouchEvent, this);
     
+    this->setGameLayer(static_cast<int>(SceneLayer::game));
+    
     //登录updata方法，在每一帧进行调用
     this->scheduleUpdate();
     
@@ -171,7 +173,7 @@ Sprite* Mainscene::addFruits()
 	auto delay     = DelayTime::create(3.0f);
 	
 	//3秒内掉落至指定坐标
-	auto move      = MoveTo::create(3.0f, Point(fruitsXPoint, (0 /*- ACTIVE_ENABLE_OFFSET*/)));
+	auto move      = MoveTo::create(3.0f, Point(fruitsXPoint + ACTIVE_ENABLE_OFFSET, (0)));
 	
 	//每秒旋转360度
 	auto rotate    = RotateTo::create(3.0f, 1080);
@@ -193,9 +195,6 @@ Sprite* Mainscene::addFruits()
 	auto active       = Sequence::create(delay, dropAction, NULL);
 	
 	fruits->runAction(active);
-
-    
-
 
     return fruits;
     
@@ -221,74 +220,72 @@ bool Mainscene::removeFruits(cocos2d::Sprite *fruits)
 
 void Mainscene::update(float dt)
 {
-	//是否删除水果
-	//bool removeEnable = false;
-	
-	//随机添加水果
-    int random = rand() % FRUITS_REFRESH_RATE;
-    if(random == 0)
-    {
-        this->addFruits();
-    }
-    
 
-    for( cocos2d::Sprite* fruit : _Fruits )
+    if(_GameLayer == static_cast<int>(SceneLayer::game))
     {
-        //是否删除水果
-        bool removeEnable = false;
-    	
-        //获取水果的坐标
-		//auto fruitsX = fruit->getPositionX();
-		auto fruitsY = fruit->getPositionY();
-        //获取熊的坐标
-        Point kumaP    = _Kuma->getPosition();
-        //获取水果图片区域信息
-        Rect fruitBox  = fruit->getBoundingBox();
-        
-		//判断水果是否被熊接到(坐标区域碰撞)
-		//判断水果是否掉地(下落出屏幕)
-		/*
-        if( fruitsY > (kumaY - ACTIVE_ENABLE_OFFSET) &&
-			fruitsY < (kumaY + ACTIVE_ENABLE_OFFSET) )
-		{
-			if( fruitsX > (kumaX - ACTIVE_ENABLE_OFFSET) &&
-				fruitsX < (kumaX + ACTIVE_ENABLE_OFFSET) )
-			{
-				removeEnable = true;
-			}
-		}
-         */
-		//判断水果是否落地
-        if( fruitsY <= 0 )
-		{
-			removeEnable = true;
-		}
-		
-        //判断Kuma的坐标是否在水果的范围内（是否接到水果）
-        if( fruitBox.containsPoint(kumaP) )
+        //随机添加水果
+        int random = rand() % FRUITS_REFRESH_RATE;
+        if(random == 0)
         {
-            removeEnable = true;
+            this->addFruits();
         }
         
-		//删除水果
-		if( removeEnable == true )
-		{
-	        this->removeFruits(fruit);
-		}
-	}
+        
+        for( cocos2d::Sprite* fruit : _Fruits )
+        {
+            //获取水果的坐标
+            //auto fruitsX = fruit->getPositionX();
+            auto fruitsY = fruit->getPositionY();
+            //获取熊的坐标
+            Point kumaP    = _Kuma->getPosition();
+            //获取水果图片区域信息
+            Rect fruitBox  = fruit->getBoundingBox();
+            
+            //判断水果是否被熊接到(坐标区域碰撞)
+            //判断水果是否掉地(下落出屏幕)
+            /*
+             if( fruitsY > (kumaY - ACTIVE_ENABLE_OFFSET) &&
+                fruitsY < (kumaY + ACTIVE_ENABLE_OFFSET) )
+             {
+                if( fruitsX > (kumaX - ACTIVE_ENABLE_OFFSET) &&
+                    fruitsX < (kumaX + ACTIVE_ENABLE_OFFSET) )
+                {
+                    removeEnable = true;
+                }
+             }
+             */
+            //判断水果是否落地
+            if( fruitsY <= 0 )
+            {
+                this->removeFruits(fruit);
+            }
+            
+            //判断Kuma的坐标是否在水果的范围内（是否接到水果）
+            if( fruitBox.containsPoint(kumaP) )
+            {
+                this->catchFruits(fruit);
+            }
+        
+        }
     
-    _Time = _Time - dt;
+        _Time = _Time - dt;
+        
+        _TimeLabel->setString(StringUtils::format("Time  %d", (int)_Time));
     
-    _TimeLable->setString(sprintf("Time  %d", _Time));
+        if( _Time < 0 )
+        {
+            this->setGameLayer(static_cast<int>(SceneLayer::result));
+        }
+    }
 }
 
 bool Mainscene::catchFruits(cocos2d::Sprite *fruits)
 {
     this->removeFruits(fruits);
     
-    _Scroes = _Scores + 1;
+    _Scores = _Scores + 1;
     
-    _ScroesLable->setString(sprintf("Scroes %d", _Scroes));
+    _ScoresLabel->setString(StringUtils::format("Scroes %d", _Scores));
     
     return true;
 }
