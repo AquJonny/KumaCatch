@@ -35,11 +35,26 @@ public:
     
     //getKuma(),setKuma()方法声明 ＊追加retain处理
     CC_SYNTHESIZE_RETAIN(cocos2d::Sprite*, _Kuma, Kuma);
+    
+    //创建用于显示分数的Lable
+    CC_SYNTHESIZE_RETAIN(cocos2d::Lable*, _ScoresLable, ScoresLables);
 
+	//创建用于显示时间的Lable
+	CC_SYNTHESIZE_RETAIN(cocos2d::Lable*, _TimeLable, TimeLable);
+	
     //getFruits(),setFruits()方法声明 ＊没有retain处理，主处理结束后被release！！！
+    //cocos2d::Vector<T> 并不是 cocos2d::Object 的子类，
+    //所以不要像使用其他cocos2d类一样来用retain/release和引用计数内存管理。
+    //创建用于存放复数个水果对象的容器(Pool)，全局
     CC_SYNTHESIZE(cocos2d::Vector<cocos2d::Sprite* >, _Fruits, Fruits);
     
-    //画面更新 ＊dt是什么？？=>deltaTime
+    //创建显示用分数变量，全局
+    CC_SYNTHESIZE(int, _Scores, Scoress);
+    
+    //创建显示用时间变量,全局
+    CC_SYNTHESIZE(int, _Time, Time);
+    
+    //画面更新 ＊dt是什么？？=>deltaTime =>单位为秒
     //函数名称updata不可以随便改动，因为需要使用scheduleUpdata方法进行登录
     void update(float dt);
     

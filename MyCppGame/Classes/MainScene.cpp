@@ -21,7 +21,12 @@ const int ACTIVE_ENABLE_OFFSET = 30;
 
 
 Mainscene::Mainscene()
-:_Kuma(nullptr)
+:_Kuma(nullptr),
+_Fruits(nullptr),
+_Scores(0),
+_ScoresLable(nullptr),
+_Time(60),
+_TimeLable(nullptr)
 {
     
 }
@@ -30,7 +35,8 @@ Mainscene::~Mainscene()
 {
     //把Player释放掉 ＊为什么只释放player？？？=>定义player时候调用了retain方法，为其计数＋1了
     CC_SAFE_RELEASE_NULL(_Kuma);
-    
+    CC_SAFE_RELEASE_NULL(_ScoresLable);
+    CC_SAFE_RELEASE_NULL(_TimeLable);
 }
 
 Scene* Mainscene::creatScene()
@@ -61,6 +67,21 @@ bool Mainscene::init()
     this->setKuma(Sprite::create("nonretina/player.png"));
     _Kuma->setPosition(Point(size.width/2.0, size.height - 450));
     this->addChild(_Kuma);
+    
+    TTFConfig ScroesTTF("Marker Felt.ttf", 20, SHADOW);
+    
+    //创建记分板(Lable)
+    auto scroesLable = Lable::createWithTTF(ScroesTTF, "Scroes 0");
+    //create方法的返回值是一个自动释放的文本对象。->因此需要set到_ScoresLable中?? 
+    _ScoresLable->setScoresLables(scroesLable);
+    _ScoresLable->setPosition(Point(size.width*0.6, size.height - FRUITS_TOP_POINT/2));
+    this->addChild(_ScoresLable, 1);
+    
+    //创建计时器(Lable)
+    auto timeLable   = Lable::createWithTTF(ScroesTTF, "Time  60");
+    _TimeLable->setTimeLable(timeLable);
+    _TimeLable->setPosition(Point(size.width*0.3, size.height - FRUITS_TOP_POINT/2));
+    this->addChild(_TimeLable, 1);
     
     //创建触屏监听事件
     auto TouchEvent = EventListenerTouchOneByOne::create();
@@ -256,13 +277,18 @@ void Mainscene::update(float dt)
 		}
 	}
     
+    _Time = _Time - dt;
+    
+    _TimeLable->setString(sprintf("Time  %d", _Time));
 }
 
 bool Mainscene::catchFruits(cocos2d::Sprite *fruits)
 {
     this->removeFruits(fruits);
     
+    _Scroes = _Scores + 1;
     
+    _ScroesLable->setString(sprintf("Scroes %d", _Scroes));
     
     return true;
 }
