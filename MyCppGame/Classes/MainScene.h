@@ -11,6 +11,10 @@
 
 #include <stdio.h>
 #include "cocos2d.h"
+#include "TitleScene.h"
+#include "MenuItem.h"
+#include "Menu.h"
+#include "SimpleAudioEngine.h"
 
 class Mainscene : public cocos2d::Layer
 {
@@ -55,7 +59,7 @@ public:
     CC_SYNTHESIZE(float, _Time, Time);
     
     //创建管理用状态寄存器（画面状态&游戏状态）
-    CC_SYNTHESIZE(int, _GameLayer, GameLayer);
+    CC_SYNTHESIZE(GameSTS, _GameLayer, GameLayer);
     
     //画面更新 ＊dt是什么？？=>deltaTime =>单位为秒
     //函数名称updata不可以随便改动，因为需要使用scheduleUpdata方法进行登录
@@ -73,7 +77,7 @@ private:
         COUNT_MAX   //最大値
     };
 
-    enum class SceneLayer
+    enum class GameSTS
     {
         title,      //标题
         game,       //游戏中
@@ -99,6 +103,22 @@ private:
     //@return  是否处理成功
     bool catchFruits(cocos2d::Sprite* fruits);
     
+    //接住水果方法
+    //@para    无
+    //@return  无
+    void GameResult();
+    
+    //游戏重开
+    //@para    无
+    //@return  无
+    void GameRestart();
+    
+    //返回标题
+    //@para    无
+    //@return  无
+    void ShowTitle();
+
+
 };
 
 

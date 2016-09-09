@@ -26,7 +26,7 @@ _Scores(0),
 _ScoresLabel(nullptr),
 _Time(60),
 _TimeLabel(nullptr),
-_GameLayer(static_cast<int>(SceneLayer::title))
+_GameLayer(GameSTS::title)
 {
     
 }
@@ -37,6 +37,10 @@ Mainscene::~Mainscene()
     CC_SAFE_RELEASE_NULL(_Kuma);
     CC_SAFE_RELEASE_NULL(_ScoresLabel);
     CC_SAFE_RELEASE_NULL(_TimeLabel);
+    
+	//释放 场景结束时候释放合适么???
+	//SimpleAudioEngine::sharedEngine()->end();
+    SimpleAudioEngine::end();
 }
 
 Scene* Mainscene::creatScene()
@@ -138,10 +142,14 @@ bool Mainscene::init()
     //将监听callback登陆到导演node里
     director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(TouchEvent, this);
     
-    this->setGameLayer(static_cast<int>(SceneLayer::game));
+    _GameLayer = GameSTS::game;
     
     //登录updata方法，在每一帧进行调用
     this->scheduleUpdate();
+    
+    //添加背景音乐并循环
+    //sharedEngine是什么意思?virtual类别的函数是什么意思?
+    SimpleAudioEngine::sharedEngine()->playBackgroundMusic("bgm/wav/main.wav", true);
     
     return true;
 }
@@ -221,7 +229,7 @@ bool Mainscene::removeFruits(cocos2d::Sprite *fruits)
 void Mainscene::update(float dt)
 {
 
-    if(_GameLayer == static_cast<int>(SceneLayer::game))
+    if(_GameLayer == GameSTS::game)
     {
         //随机添加水果
         int random = rand() % FRUITS_REFRESH_RATE;
@@ -274,7 +282,12 @@ void Mainscene::update(float dt)
     
         if( _Time < 0 )
         {
-            this->setGameLayer(static_cast<int>(SceneLayer::result));
+            _GameLayer = GameSTS::result;
+            
+            //添加音效
+            SimpleAudioEngine::sharedEngine()->playEffect("se/wav/finish.wav");
+            
+            this->GameResult();
         }
     }
 }
@@ -289,3 +302,73 @@ bool Mainscene::catchFruits(cocos2d::Sprite *fruits)
     
     return true;
 }
+
+void Mainscene::GameResult()
+{
+	auto size       = Director::getInstance()->getWinSize();
+
+    //添加背景音乐并循环
+    //sharedEngine是什么意思?virtual类别的函数是什么意思?
+    SimpleAudioEngine::sharedEngine()->playBackgroundMusic("bgm/wav/result.wav", true);
+
+	auto MenuTitle = MenuItemImange::creat("nonretina/finish.png");
+	
+	MenuTitle->SetPosition(size.width/2, size.height*0.8);
+	
+	auto MenuLabel = MenuItemFont::create(StringUtils::format("Scroes %d", _Scores));
+
+	MenuLabel->SetPosition(size.width/2, size.height*0.6);
+	
+	auto MenuUp    = Menu:create(MenuTitle, MenuLabel, Null);
+	
+	this->addchild(MenuUp);
+
+
+	auto MenuRetry = MenuItemImage::create( "nonretina/replay_button.png", 
+											"nonretina/replay_button_pressed.png", 
+											GameRestart );
+
+	MenuRetry->setAnchorPoint(0.25, 0.5);
+	
+	MenuRetry->SetPosition(size.width/2, size.height*0.3);
+	
+	auto MenuExit  = MenuItemImage::create( "nonretina/title_button.png", 
+											"nonretina/title_button_pressed.png", 
+											ShowTitle );
+
+	MenuExit->setAnchorPoint(0.75, 0.5);
+
+	MenuExit->SetPosition(size.width/2, size.height*0.2);
+
+	auto MenuDown  = Menu::create(MenuRetry, MenuExit, Null);
+
+	this->addchild(MenuUp);
+
+}
+
+void Mainscene::GameRestart()
+{
+
+	auto scene = Mainscene::creatScene();	
+	
+	auto active = TransitionFadeBL::create(1.0f, scene);
+	
+	auto director = Director::getInstance();
+	
+	director->repleceScene(active);
+	
+}
+
+void Mainscene::ShowTitle()
+{
+
+	auto scene = TitleScene::creatScene();	
+	
+	auto active = TransitionProgressRadialCCW::create(1.0f, scene);
+	
+	auto director = Director::getInstance();
+	
+	director->repleceScene(active);
+	
+}
+
