@@ -44,27 +44,31 @@ bool TitleScene::init()
 
 	titleBackground->setPosition(size.width/2.0, size.height/2.0);
 	
-	this->addchild(titleBackground);
+	this->addChild(titleBackground);
 	
 	//添加标题Logo
 	auto Logo			 = Sprite::create("nonretina/title_logo.png");
 	
 	Logo->setPosition(size.width/2.0, size.height*0.75);
 	
-	this->addchild(Logo);
+	this->addChild(Logo);
 	
 	//添加标题画面按钮
-	auto StartButten	 = MenuItemImage::create("nonretina/title_start.png",GameStart);
+    auto StartButten	 = MenuItemImage::create("nonretina/title_start.png",
+                                                 "nonretina/title_start.png",
+                                                 CC_CALLBACK_1(TitleScene::GameStart, this));
 	
-	StartButten->setPosition(size.width/2.0, size.height*0.2);
+	auto TitleMenu		 = Menu::create(StartButten, nullptr);
 	
-	auto TitleMenu		 = Menu::create(StartButten, Null);
-	
-	this->addchild(TitleMenu);
+	TitleMenu->setPosition(size.width/2.0, size.height*0.2);
+    
+	this->addChild(TitleMenu);
 
 	//添加标题画面背景音乐
-	SimpleAudioEngine::sharedEngine()->playBackgroundMusic("bgm/wav/title.wav", true);
-
+	CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/title.wav", true);
+    
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
+    
     return true;
 }
 
@@ -74,7 +78,7 @@ void TitleScene::update(float dt)
 
 }
 
-void TitleSecen::GameStart()
+void TitleScene::GameStart(Ref* pSender)
 {
 	auto scene = Mainscene::creatScene();	
 	
@@ -82,6 +86,6 @@ void TitleSecen::GameStart()
 	
 	auto director = Director::getInstance();
 	
-	director->repleceScene(active);
+	director->replaceScene(active);
 }
 

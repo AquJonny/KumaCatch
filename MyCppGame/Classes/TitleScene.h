@@ -12,9 +12,7 @@
 #include <stdio.h>
 #include "cocos2d.h"
 #include "MainScene.h"
-#include "MenuItem.h"
-#include "Menu.h"
-#include "SimpleAudioEngine.h"
+
 
 class TitleScene : public cocos2d::Layer
 {
@@ -46,7 +44,7 @@ private:
 	//游戏开始(场景切换)
     //@para    无
     //@return  无
-	void GameStart();
+	void GameStart(Ref* pSender);
     
 };
 

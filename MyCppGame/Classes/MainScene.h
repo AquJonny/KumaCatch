@@ -12,8 +12,8 @@
 #include <stdio.h>
 #include "cocos2d.h"
 #include "TitleScene.h"
-#include "MenuItem.h"
 #include "Menu.h"
+//#include "MenuItem.h"
 #include "SimpleAudioEngine.h"
 
 class Mainscene : public cocos2d::Layer
@@ -36,6 +36,17 @@ public:
     
     //利用创建的工厂方法来构造此类
     CREATE_FUNC(Mainscene);
+
+    enum class GameSTS
+    {
+        title,      //标题
+        game,       //游戏中
+        result,     //结果显示
+        setting,    //设定
+        
+        COUNT_MAX   //最大值
+        
+    };
     
     //getKuma(),setKuma()方法声明 ＊追加retain处理
     CC_SYNTHESIZE_RETAIN(cocos2d::Sprite*, _Kuma, Kuma);
@@ -45,7 +56,7 @@ public:
 
 	//创建用于显示时间的Lable
 	CC_SYNTHESIZE_RETAIN(cocos2d::Label*, _TimeLabel, TimeLabel);
-	
+    
     //getFruits(),setFruits()方法声明 ＊没有retain处理，主处理结束后被release！！！
     //cocos2d::Vector<T> 并不是 cocos2d::Object 的子类，
     //所以不要像使用其他cocos2d类一样来用retain/release和引用计数内存管理。
@@ -76,17 +87,6 @@ private:
         CHERRY,     //さくらんぼ
         COUNT_MAX   //最大値
     };
-
-    enum class GameSTS
-    {
-        title,      //标题
-        game,       //游戏中
-        result,     //结果显示
-        setting,    //设定
-        
-        COUNT_MAX   //最大值
-        
-    };
     
     //水果添加方法
     //@para    无
@@ -111,12 +111,12 @@ private:
     //游戏重开
     //@para    无
     //@return  无
-    void GameRestart();
+    void GameRestart(Ref* pSender);
     
     //返回标题
     //@para    无
     //@return  无
-    void ShowTitle();
+    void ShowTitle(Ref* pSender);
 
 
 };

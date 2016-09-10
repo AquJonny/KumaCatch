@@ -64,6 +64,7 @@
 		F3A367151D7BC2B3000AA754 /* bgm in Resources */ = {isa = PBXBuildFile; fileRef = F3A367141D7BC2B3000AA754 /* bgm */; };
 		F3A367171D7BC2BB000AA754 /* images in Resources */ = {isa = PBXBuildFile; fileRef = F3A367161D7BC2BB000AA754 /* images */; };
 		F3A367191D7BC2C2000AA754 /* se in Resources */ = {isa = PBXBuildFile; fileRef = F3A367181D7BC2C2000AA754 /* se */; };
+		F3AFBF1B1D82F005006E8B08 /* TitleScene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F3AFBF191D82F005006E8B08 /* TitleScene.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -165,6 +166,8 @@
 		F3A367141D7BC2B3000AA754 /* bgm */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bgm; sourceTree = "<group>"; };
 		F3A367161D7BC2BB000AA754 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
 		F3A367181D7BC2C2000AA754 /* se */ = {isa = PBXFileReference; lastKnownFileType = folder; path = se; sourceTree = "<group>"; };
+		F3AFBF191D82F005006E8B08 /* TitleScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TitleScene.cpp; sourceTree = "<group>"; };
+		F3AFBF1A1D82F005006E8B08 /* TitleScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TitleScene.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -301,6 +304,8 @@
 		46880B8319C43A87006E1F66 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				F3AFBF191D82F005006E8B08 /* TitleScene.cpp */,
+				F3AFBF1A1D82F005006E8B08 /* TitleScene.h */,
 				46880B8419C43A87006E1F66 /* AppDelegate.cpp */,
 				46880B8519C43A87006E1F66 /* AppDelegate.h */,
 				F3A3670F1D790416000AA754 /* MainScene.cpp */,
@@ -505,6 +510,7 @@
 				503AE10217EB989F00D1A890 /* RootViewController.mm in Sources */,
 				503AE10117EB989F00D1A890 /* main.m in Sources */,
 				F3A367111D790416000AA754 /* MainScene.cpp in Sources */,
+				F3AFBF1B1D82F005006E8B08 /* TitleScene.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

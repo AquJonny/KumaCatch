@@ -24,7 +24,7 @@ Mainscene::Mainscene()
 :_Kuma(nullptr),
 _Scores(0),
 _ScoresLabel(nullptr),
-_Time(60),
+_Time(10),
 _TimeLabel(nullptr),
 _GameLayer(GameSTS::title)
 {
@@ -40,7 +40,7 @@ Mainscene::~Mainscene()
     
 	//释放 场景结束时候释放合适么???
 	//SimpleAudioEngine::sharedEngine()->end();
-    SimpleAudioEngine::end();
+    //CocosDenshion::SimpleAudioEngine::end();
 }
 
 Scene* Mainscene::creatScene()
@@ -146,10 +146,12 @@ bool Mainscene::init()
     
     //登录updata方法，在每一帧进行调用
     this->scheduleUpdate();
-    
+
     //添加背景音乐并循环
     //sharedEngine是什么意思?virtual类别的函数是什么意思?
-    SimpleAudioEngine::sharedEngine()->playBackgroundMusic("bgm/wav/main.wav", true);
+    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/main.wav", true);
+    
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
     
     return true;
 }
@@ -285,7 +287,7 @@ void Mainscene::update(float dt)
             _GameLayer = GameSTS::result;
             
             //添加音效
-            SimpleAudioEngine::sharedEngine()->playEffect("se/wav/finish.wav");
+            CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se/wav/finish.wav");
             
             this->GameResult();
         }
@@ -303,72 +305,81 @@ bool Mainscene::catchFruits(cocos2d::Sprite *fruits)
     return true;
 }
 
+void Mainscene::GameRestart(Ref* pSender)
+{
+    
+    auto scene = Mainscene::creatScene();
+    
+    auto active = TransitionCrossFade::create(0.5f, scene);
+    
+    auto director = Director::getInstance();
+    
+    director->replaceScene(active);
+    
+}
+
+void Mainscene::ShowTitle(Ref* pSender)
+{
+    
+    auto scene = TitleScene::creatScene();
+    
+    auto active = TransitionProgressRadialCCW::create(0.5f, scene);
+    
+    auto director = Director::getInstance();
+    
+    director->replaceScene(active);
+    
+}
+
 void Mainscene::GameResult()
 {
 	auto size       = Director::getInstance()->getWinSize();
 
     //添加背景音乐并循环
     //sharedEngine是什么意思?virtual类别的函数是什么意思?
-    SimpleAudioEngine::sharedEngine()->playBackgroundMusic("bgm/wav/result.wav", true);
+    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/result.wav", true);
+    
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
 
-	auto MenuTitle = MenuItemImange::creat("nonretina/finish.png");
-	
-	MenuTitle->SetPosition(size.width/2, size.height*0.8);
+    auto MenuTitle = MenuItemFont::create("Finish");
 	
 	auto MenuLabel = MenuItemFont::create(StringUtils::format("Scroes %d", _Scores));
-
-	MenuLabel->SetPosition(size.width/2, size.height*0.6);
 	
-	auto MenuUp    = Menu:create(MenuTitle, MenuLabel, Null);
+    auto MenuUp    = Menu::create(MenuTitle, MenuLabel, nullptr);
 	
-	this->addchild(MenuUp);
+    MenuUp->setPosition(Point(size.width/2, size.height*0.6));
+    
+    MenuUp->alignItemsVerticallyWithPadding(20);
+    
+	this->addChild(MenuUp);
+    
+    auto MenuRetry = MenuItemImage::create("nonretina/replay_button.png",
+                                           "nonretina/replya_botton_pressed.png",
+                                           CC_CALLBACK_1(Mainscene::GameRestart, this));
+    
+    //MenuItemImage::create( "nonretina/replay_button.png", "nonretina/replay_button_pressed.png", CC_CALLBACK_1( Mainscene::GameRestart, this) );
 
-
-	auto MenuRetry = MenuItemImage::create( "nonretina/replay_button.png", 
-											"nonretina/replay_button_pressed.png", 
-											GameRestart );
-
-	MenuRetry->setAnchorPoint(0.25, 0.5);
+    MenuRetry->setAnchorPoint(Point(0.6, 0.5));
 	
-	MenuRetry->SetPosition(size.width/2, size.height*0.3);
+	MenuRetry->setPosition(Point(size.width/2, size.height*0.3));
 	
 	auto MenuExit  = MenuItemImage::create( "nonretina/title_button.png", 
 											"nonretina/title_button_pressed.png", 
-											ShowTitle );
+                                           CC_CALLBACK_1( Mainscene::ShowTitle, this) );
+    
+	MenuExit->setAnchorPoint(Point(0.4, 0.5));
 
-	MenuExit->setAnchorPoint(0.75, 0.5);
+	MenuExit->setPosition(size.width/2, size.height*0.2);
 
-	MenuExit->SetPosition(size.width/2, size.height*0.2);
+	auto MenuDown  = Menu::create(MenuRetry, MenuExit, nullptr);
 
-	auto MenuDown  = Menu::create(MenuRetry, MenuExit, Null);
-
-	this->addchild(MenuUp);
+    MenuDown->alignItemsVerticallyWithPadding(20);
+    
+    MenuDown->setPosition(Point(size.width/2, size.height*0.3));
+    
+	this->addChild(MenuDown);
 
 }
 
-void Mainscene::GameRestart()
-{
 
-	auto scene = Mainscene::creatScene();	
-	
-	auto active = TransitionFadeBL::create(1.0f, scene);
-	
-	auto director = Director::getInstance();
-	
-	director->repleceScene(active);
-	
-}
-
-void Mainscene::ShowTitle()
-{
-
-	auto scene = TitleScene::creatScene();	
-	
-	auto active = TransitionProgressRadialCCW::create(1.0f, scene);
-	
-	auto director = Director::getInstance();
-	
-	director->repleceScene(active);
-	
-}
 
