@@ -76,6 +76,9 @@ public:
     //函数名称updata不可以随便改动，因为需要使用scheduleUpdata方法进行登录
     void update(float dt);
     
+    //场景载入完成时候调用一次的方法
+    void onEnterTransitionDidFinish() override;
+    
 private:
     
     enum class FruitsType

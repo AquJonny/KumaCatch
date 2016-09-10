@@ -24,7 +24,7 @@ Mainscene::Mainscene()
 :_Kuma(nullptr),
 _Scores(0),
 _ScoresLabel(nullptr),
-_Time(10),
+_Time(30),
 _TimeLabel(nullptr),
 _GameLayer(GameSTS::title)
 {
@@ -128,8 +128,10 @@ bool Mainscene::init()
         
         Target = Target.getClampPoint(Point(ACTIVE_ENABLE_OFFSET, _Kuma->getPosition().y), Point(size.width - ACTIVE_ENABLE_OFFSET, _Kuma->getPosition().y));
         
-        _Kuma->setPosition(Target);
-        
+        if( _GameLayer == GameSTS::game )
+        {
+            _Kuma->setPosition(Target);
+        }
     };
     
     //抬起事件
@@ -146,12 +148,6 @@ bool Mainscene::init()
     
     //登录updata方法，在每一帧进行调用
     this->scheduleUpdate();
-
-    //添加背景音乐并循环
-    //sharedEngine是什么意思?virtual类别的函数是什么意思?
-    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/main.wav", true);
-    
-    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
     
     return true;
 }
@@ -302,6 +298,8 @@ bool Mainscene::catchFruits(cocos2d::Sprite *fruits)
     
     _ScoresLabel->setString(StringUtils::format("Scroes %d", _Scores));
     
+    CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se/wav/catch_fruit.wav");
+    
     return true;
 }
 
@@ -381,5 +379,17 @@ void Mainscene::GameResult()
 
 }
 
+void Mainscene::onEnterTransitionDidFinish()
+{
+    
+    Layer::onEnterTransitionDidFinish();
+    
+    //添加背景音乐并循环
+    //sharedEngine是什么意思?virtual类别的函数是什么意思?
+    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/main.wav", true);
+    
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
+    
+}
 
 

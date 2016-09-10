@@ -39,6 +39,8 @@ public:
     //函数名称updata不可以随便改动，因为需要使用scheduleUpdata方法进行登录
     void update(float dt);
     
+    void onEnterTransitionDidFinish() override;
+    
 private:
     
 	//游戏开始(场景切换)

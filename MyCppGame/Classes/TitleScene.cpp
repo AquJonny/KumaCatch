@@ -63,11 +63,6 @@ bool TitleScene::init()
 	TitleMenu->setPosition(size.width/2.0, size.height*0.2);
     
 	this->addChild(TitleMenu);
-
-	//添加标题画面背景音乐
-	CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/title.wav", true);
-    
-    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
     
     return true;
 }
@@ -87,5 +82,16 @@ void TitleScene::GameStart(Ref* pSender)
 	auto director = Director::getInstance();
 	
 	director->replaceScene(active);
+}
+
+void TitleScene::onEnterTransitionDidFinish()
+{
+    Layer::onEnterTransitionDidFinish();
+
+    //添加标题画面背景音乐
+    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/title.wav", true);
+    
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
+    
 }
 
