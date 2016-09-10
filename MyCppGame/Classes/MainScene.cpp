@@ -19,14 +19,17 @@ const int FRUITS_REFRESH_RATE = 20;
 //角色&水果的可活动范围偏移量(角色图的二分之一宽度)(单位:像素)
 const int ACTIVE_ENABLE_OFFSET = 30;
 
+//一局游戏的时间
+const int GAME_TIME_SECOND = 10;
 
 Mainscene::Mainscene()
-:_Kuma(nullptr),
-_Scores(0),
-_ScoresLabel(nullptr),
-_Time(30),
-_TimeLabel(nullptr),
-_GameLayer(GameSTS::title)
+:_Kuma(nullptr)
+,_IsCrash(false)
+,_Scores(0)
+,_ScoresLabel(nullptr)
+,_Time(GAME_TIME_SECOND)
+,_TimeLabel(nullptr)
+,_GameLayer(GameSTS::ready)
 {
     
 }
@@ -72,6 +75,43 @@ bool Mainscene::init()
     _Kuma->setPosition(Point(size.width/2.0, size.height - 450));
     this->addChild(_Kuma);
     
+    //为角色添加动画
+    //如何添加动画角色？？？SpriteCatch？SpriteNode？
+    
+    //创建容纳动画帧的容器
+    cocos2d::Vector<SpriteFrame*>frames;
+    
+    //每一帧动画的尺寸，用于从一张图片中提取动画帧
+    auto PlayerSizeW = 85;
+    auto PlayerSizeH = 63;
+    
+    auto PlayerAnimeFrame = 3;
+    for (int i = 0; i < PlayerAnimeFrame; i++)
+    {
+        //循环3次按照尺寸提取动画帧
+        auto rect = Rect(PlayerSizeW * i, 0, PlayerSizeW, PlayerSizeH);
+        
+        auto frame = SpriteFrame::create("nonretina/player.png", rect);
+        
+        frames.pushBack(frame);
+        
+    }
+    
+    //使用动画帧创建动画，动画循环3次 也就是1秒
+    auto anime = Animation::createWithSpriteFrames(frames, 20.0/60.0);
+    anime->setLoops(3);
+    
+    //动画播放完成后恢复到最初画面，false为不恢复
+    anime->setRestoreOriginalFrame(true);
+    
+    //创建animate对象
+    auto action = Animate::create(anime);
+
+    auto acRea  = RepeatForever::create(action);
+    
+    //运行动作
+    _Kuma->runAction(acRea);
+    
     TTFConfig ScroesTTF("Marker Felt.ttf", 20);
     
     //创建记分板(Lable)
@@ -82,7 +122,7 @@ bool Mainscene::init()
     this->addChild(_ScoresLabel, 1);
     
     //创建计时器(Lable)
-    auto timeLabel   = Label::createWithTTF(ScroesTTF, "Time  60");
+    auto timeLabel   = Label::createWithTTF(ScroesTTF, StringUtils::format("Time %d", (int)_Time));
     this->setTimeLabel(timeLabel);
     _TimeLabel->setPosition(Point(size.width*0.25, size.height - FRUITS_TOP_POINT/2));
     this->addChild(_TimeLabel, 1);
@@ -130,7 +170,11 @@ bool Mainscene::init()
         
         if( _GameLayer == GameSTS::game )
         {
-            _Kuma->setPosition(Target);
+            if( !getIsCrash() )
+            {
+                _Kuma->setPosition(Target);
+        
+            }
         }
     };
     
@@ -144,12 +188,79 @@ bool Mainscene::init()
     //将监听callback登陆到导演node里
     director->getEventDispatcher()->addEventListenerWithSceneGraphPriority(TouchEvent, this);
     
-    _GameLayer = GameSTS::game;
-    
     //登录updata方法，在每一帧进行调用
     this->scheduleUpdate();
     
     return true;
+}
+
+void Mainscene::ReadyForGame()
+{
+    auto WinSize = Director::getInstance()->getWinSize();
+    auto Center  = Point(WinSize.width/2.0, WinSize.height/2.0);
+    
+    //创建ready画面
+    auto ready   = Sprite::create("nonretina/ready.png");
+    ready->setPosition(Center);
+    this->addChild(ready);
+    
+    //创建start画面
+    auto start   = Sprite::create("nonretina/start.png");
+    start->setPosition(Center);
+    
+    //创建start动画（扩大并渐隐，然后删除自己
+    auto Scale   = Sequence::create(Spawn::create( ScaleTo::create(2.0, 1),
+                                                   FadeOut::create(1.0),
+                                                   nullptr),
+                                    RemoveSelf::create(),
+                                    nullptr);
+    start->runAction(Scale);
+    start->retain();
+    
+    //创建ready动画（渐隐渐现，调用start，删除自己
+    auto blink   = Sequence::create(FadeTo::create(0.5, 150),
+                                    FadeTo::create(0.5, 250),
+                                    DelayTime::create(1),
+                                    CallFunc::create([this, start]
+                                                     {
+                                                         this->addChild(start);
+                                                         CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(0.2);
+                                                         CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se/wav/start.wav");
+                                                         _GameLayer = GameSTS::game;
+                                                         start->release();
+                                                     }),
+                                    RemoveSelf::create(),
+                                    nullptr);
+    
+    ready->runAction(blink);
+    
+}
+
+void Mainscene::FinishForGame()
+{
+    auto WinSize = Director::getInstance()->getWinSize();
+    auto Center  = Point(WinSize.width/2.0, WinSize.height/2.0);
+    
+    auto Finish  = Sprite::create("nonretina/finish.png");
+    Finish->setScale(0.1);
+    Finish->setPosition(Center);
+    
+    auto Scale   = ScaleTo::create(1.0, 1);
+    auto ScaleRe = ScaleTo::create(0.1, 1);
+    auto Rotate  = RotateTo::create(1, 360);
+    
+    auto active  = Sequence::create(Spawn::create(Scale, Rotate, nullptr),
+                                    DelayTime::create(1),
+                                    Spawn::create(ScaleRe, Rotate, nullptr),
+                                    CallFunc::create([this]
+                                    {
+                                        _GameLayer = GameSTS::result;
+                                        Mainscene::GameResult();
+                                    }),
+                                    RemoveSelf::create(),
+                                    nullptr);
+    Finish->runAction(active);
+    this->addChild(Finish);
 }
 
 Sprite* Mainscene::addFruits()
@@ -176,13 +287,13 @@ Sprite* Mainscene::addFruits()
     
 	//水果的移动和动作的追加
 	//出现后等待3秒
-	auto delay     = DelayTime::create(3.0f);
+	auto delay     = DelayTime::create(1.0f);
 	
 	//3秒内掉落至指定坐标
-	auto move      = MoveTo::create(3.0f, Point(fruitsXPoint + ACTIVE_ENABLE_OFFSET, (0)));
+	auto move      = MoveTo::create(2.0f, Point(fruitsXPoint + ACTIVE_ENABLE_OFFSET, (0)));
 	
 	//每秒旋转360度
-	auto rotate    = RotateTo::create(3.0f, 1080);
+	auto rotate    = RotateTo::create(2.0f, 1080);
 	
 	//循环旋转
 	//auto rotateRepeat = RepeatForever::create(rotate);
@@ -226,8 +337,7 @@ bool Mainscene::removeFruits(cocos2d::Sprite *fruits)
 
 void Mainscene::update(float dt)
 {
-
-    if(_GameLayer == GameSTS::game)
+    if( _GameLayer == GameSTS::game )
     {
         //随机添加水果
         int random = rand() % FRUITS_REFRESH_RATE;
@@ -269,7 +379,11 @@ void Mainscene::update(float dt)
             //判断Kuma的坐标是否在水果的范围内（是否接到水果）
             if( fruitBox.containsPoint(kumaP) )
             {
-                this->catchFruits(fruit);
+                if( !getIsCrash() )
+                {
+                    this->catchFruits(fruit);
+            
+                }
             }
         
         }
@@ -280,25 +394,45 @@ void Mainscene::update(float dt)
     
         if( _Time < 0 )
         {
-            _GameLayer = GameSTS::result;
+            _GameLayer = GameSTS::finish ;
             
             //添加音效
             CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se/wav/finish.wav");
             
-            this->GameResult();
+            Mainscene::FinishForGame();
         }
     }
 }
 
 bool Mainscene::catchFruits(cocos2d::Sprite *fruits)
 {
-    this->removeFruits(fruits);
+    auto AudioEngine = CocosDenshion::SimpleAudioEngine::getInstance();
     
-    _Scores = _Scores + 1;
+    auto Type   = static_cast<FruitsType>(fruits->getTag());
+    
+    switch (Type) {
+        case Mainscene::FruitsType::GOLDEN:
+            _Scores = _Scores + 5;
+            AudioEngine->playEffect("se/wav/catch_golden.wav");
+            break;
+        
+        case Mainscene::FruitsType::BOMB:
+            AudioEngine->playEffect("se/wav/catch_bomb.wav");
+            Mainscene::CatchBoom();
+            AudioEngine->playEffect("se/wav/crash.wav");
+            break;
+            
+        default:
+            _Scores = _Scores + 1;
+            AudioEngine->playEffect("se/wav/catch_fruit.wav");
+            
+            break;
+    }
+
     
     _ScoresLabel->setString(StringUtils::format("Scroes %d", _Scores));
     
-    CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se/wav/catch_fruit.wav");
+    this->removeFruits(fruits);
     
     return true;
 }
@@ -352,7 +486,7 @@ void Mainscene::GameResult()
 	this->addChild(MenuUp);
     
     auto MenuRetry = MenuItemImage::create("nonretina/replay_button.png",
-                                           "nonretina/replya_botton_pressed.png",
+                                           "nonretina/replay_botton_pressed.png",
                                            CC_CALLBACK_1(Mainscene::GameRestart, this));
     
     //MenuItemImage::create( "nonretina/replay_button.png", "nonretina/replay_button_pressed.png", CC_CALLBACK_1( Mainscene::GameRestart, this) );
@@ -388,8 +522,40 @@ void Mainscene::onEnterTransitionDidFinish()
     //sharedEngine是什么意思?virtual类别的函数是什么意思?
     CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/main.wav", true);
     
-    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.2);
+
+    Mainscene::ReadyForGame();
     
 }
 
+void Mainscene::CatchBoom()
+{
+    _IsCrash = true;
+    
+    cocos2d::Vector<SpriteFrame*>frames;
+    
+    auto PlayerSizeW = 85;
+    auto PlayerSizeH = 63;
+    
+    auto PlayerAnimeFrame = 3;
+    for (int i = 0; i < PlayerAnimeFrame; i++)
+    {
+        auto rect = Rect(PlayerSizeW * i, 0, PlayerSizeW, PlayerSizeH);
+        
+        auto frame = SpriteFrame::create("nonretina/player_crash.png", rect);
+        
+        frames.pushBack(frame);
+        
+    }
+    
+    auto anime = Animation::createWithSpriteFrames(frames, 20.0/60.0);
+    anime->setLoops(3);
+    
+    
+    anime->setRestoreOriginalFrame(true);
+    
+    auto action = Animate::create(anime);
+    
+    _Kuma->runAction(Sequence::create(action,CallFunc::create([this]{ _IsCrash = false; }), nullptr));
 
+}

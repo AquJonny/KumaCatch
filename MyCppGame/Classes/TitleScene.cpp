@@ -91,7 +91,7 @@ void TitleScene::onEnterTransitionDidFinish()
     //添加标题画面背景音乐
     CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("bgm/wav/title.wav", true);
     
-    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.2);
     
 }
 

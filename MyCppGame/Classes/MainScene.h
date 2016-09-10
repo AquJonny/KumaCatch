@@ -40,7 +40,9 @@ public:
     enum class GameSTS
     {
         title,      //标题
+        ready,      //游戏开始前
         game,       //游戏中
+        finish,     //游戏结束
         result,     //结果显示
         setting,    //设定
         
@@ -72,7 +74,10 @@ public:
     //创建管理用状态寄存器（画面状态&游戏状态）
     CC_SYNTHESIZE(GameSTS, _GameLayer, GameLayer);
     
-    //画面更新 ＊dt是什么？？=>deltaTime =>单位为秒
+    //增加Flag用于标志角色是否被炸弹眩晕
+    CC_SYNTHESIZE(bool, _IsCrash, IsCrash);
+    
+    //画面更新 ＊dt是什么？？=>deltaTime =>单位为秒（例如：0.3123秒）
     //函数名称updata不可以随便改动，因为需要使用scheduleUpdata方法进行登录
     void update(float dt);
     
@@ -81,6 +86,16 @@ public:
     
 private:
     
+    //添加准备画面方法
+    //@para    无
+    //@return  无
+    void ReadyForGame();
+    
+    //添加结束画面方法
+    //@para    无
+    //@return  无
+    void FinishForGame();
+    
     enum class FruitsType
     {
         APPLE,      //リンゴ
@@ -88,6 +103,10 @@ private:
         ORANGE,     //オレンジ
         BANANA,     //バナナ
         CHERRY,     //さくらんぼ
+        
+        GOLDEN,     //黄金のリンゴ
+        BOMB,       //爆弾
+        
         COUNT_MAX   //最大値
     };
     
@@ -121,7 +140,10 @@ private:
     //@return  无
     void ShowTitle(Ref* pSender);
 
-
+    //接住炸弹后的特殊处理方法
+    //@para    无
+    //@return  无
+    void CatchBoom();
 };
 
 

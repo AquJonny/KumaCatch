@@ -68,8 +68,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     
     // turn on display FPS
     // 开关帧数显示等Debug信息
-    director->setDisplayStats(true);
-    //director->setDisplayStats(false);
+    //director->setDisplayStats(true);
+    director->setDisplayStats(false);
     
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
@@ -105,7 +105,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // create a scene. it's an autorelease object
     // 创建一个主画面并加载
     //auto scene = HelloWorld::createScene();
-    auto scene = Mainscene::creatScene();
+    auto scene = TitleScene::creatScene();
     
     // run
     director->runWithScene(scene);
