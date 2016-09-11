@@ -22,6 +22,8 @@ const int ACTIVE_ENABLE_OFFSET = 30;
 //一局游戏的时间
 const int GAME_TIME_SECOND = 10;
 
+const char* HIGHSCORES = "highscroesKey";
+
 Mainscene::Mainscene()
 :_Kuma(nullptr)
 ,_IsCrash(false)
@@ -30,8 +32,12 @@ Mainscene::Mainscene()
 ,_Time(GAME_TIME_SECOND)
 ,_TimeLabel(nullptr)
 ,_GameLayer(GameSTS::ready)
+,_FruitsNode(nullptr)
+,_HighScoresL(nullptr)
 {
-    
+    //随机数初期化
+    std::random_device rdev;
+    _MTRand.seed(rdev());
 }
 
 Mainscene::~Mainscene()
@@ -40,8 +46,9 @@ Mainscene::~Mainscene()
     CC_SAFE_RELEASE_NULL(_Kuma);
     CC_SAFE_RELEASE_NULL(_ScoresLabel);
     CC_SAFE_RELEASE_NULL(_TimeLabel);
+    CC_SAFE_RELEASE_NULL(_FruitsNode);
     
-	//释放 场景结束时候释放合适么???
+	//释放 场景结束时候释放合适么???->游戏结束时候end
 	//SimpleAudioEngine::sharedEngine()->end();
     //CocosDenshion::SimpleAudioEngine::end();
 }
@@ -111,6 +118,11 @@ bool Mainscene::init()
     
     //运行动作
     _Kuma->runAction(acRea);
+    
+    //加载水果SpriteNode
+    auto fruitSpriteNode = SpriteBatchNode::create("nonretina/fruits.png");
+    this->addChild(fruitSpriteNode);
+    this->setFruitsNode(fruitSpriteNode);
     
     TTFConfig ScroesTTF("Marker Felt.ttf", 20);
     
@@ -206,10 +218,11 @@ void Mainscene::ReadyForGame()
     
     //创建start画面
     auto start   = Sprite::create("nonretina/start.png");
+    start->setScale(0.5);
     start->setPosition(Center);
     
     //创建start动画（扩大并渐隐，然后删除自己
-    auto Scale   = Sequence::create(Spawn::create( ScaleTo::create(2.0, 1),
+    auto Scale   = Sequence::create(Spawn::create( ScaleTo::create(1.0, 5.0),
                                                    FadeOut::create(1.0),
                                                    nullptr),
                                     RemoveSelf::create(),
@@ -271,8 +284,14 @@ Sprite* Mainscene::addFruits()
     int  Type       = rand() % static_cast<int>(FruitsType::COUNT_MAX);
     
     //根据获得的数字创建文件名，水果枚举列表需要和图片文件的序号对应
-    std::string filename = StringUtils::format("nonretina/fruit%d.png",Type);
-    auto fruits     = Sprite::create(filename);
+    //std::string filename = StringUtils::format("nonretina/fruit%d.png",Type);
+    //auto fruits     = Sprite::create(filename);
+    
+    auto fruitW     = (_FruitsNode->getTextureAtlas()->getTexture()->getContentSize().width)
+                        /static_cast<int>(FruitsType::COUNT_MAX);
+    auto fruitH     = _FruitsNode->getTextureAtlas()->getTexture()->getContentSize().height;
+    
+    auto fruits     = Sprite::create("nonretina/fruits.png", Rect(fruitW * Type, 0, fruitW, fruitH));
     
     //设置Tag便于之后查找
     fruits->setTag(Type);
@@ -282,12 +301,18 @@ Sprite* Mainscene::addFruits()
     fruits->setPosition(Point(fruitsXPoint + ACTIVE_ENABLE_OFFSET, size.height - FRUITS_TOP_POINT));
 
     //把水果放到屏幕中，将屏幕中存在的水果保存至Fruits的仓库中
-    this->addChild(fruits);
+    //this->addChild(fruits);
+    
+    //为何要在Node集里面addchild？
+    //因为_FritsNode是this的Child
+    _FruitsNode->addChild(fruits);
     _Fruits.pushBack(fruits);
     
 	//水果的移动和动作的追加
-	//出现后等待3秒
-	auto delay     = DelayTime::create(1.0f);
+	//出现后等待0.5秒
+    fruits->setScale(0);
+    auto delay     = ScaleTo::create(0.5, 1);
+    //DelayTime::create(1.0f);
 	
 	//3秒内掉落至指定坐标
 	auto move      = MoveTo::create(2.0f, Point(fruitsXPoint + ACTIVE_ENABLE_OFFSET, (0)));
@@ -473,11 +498,19 @@ void Mainscene::GameResult()
     
     CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(0.5);
 
-    auto MenuTitle = MenuItemFont::create("Finish");
+    auto MenuScore  = MenuItemFont::create(StringUtils::format("Scroes %d", _Scores));
 	
-	auto MenuLabel = MenuItemFont::create(StringUtils::format("Scroes %d", _Scores));
+    auto HighScore  = UserDefault::getInstance()->getIntegerForKey(HIGHSCORES, 0);
+    
+    if( _Scores > HighScore )
+    {
+        HighScore = _Scores;
+        UserDefault::getInstance()->setIntegerForKey(HIGHSCORES, HighScore);
+    }
+    
+	auto MenuScoreH = MenuItemFont::create(StringUtils::format("Best Scroes %d", HighScore));
 	
-    auto MenuUp    = Menu::create(MenuTitle, MenuLabel, nullptr);
+    auto MenuUp     = Menu::create(MenuScore, MenuScoreH, nullptr);
 	
     MenuUp->setPosition(Point(size.width/2, size.height*0.6));
     
@@ -486,7 +519,7 @@ void Mainscene::GameResult()
 	this->addChild(MenuUp);
     
     auto MenuRetry = MenuItemImage::create("nonretina/replay_button.png",
-                                           "nonretina/replay_botton_pressed.png",
+                                           "nonretina/replay_button_pressed.png",
                                            CC_CALLBACK_1(Mainscene::GameRestart, this));
     
     //MenuItemImage::create( "nonretina/replay_button.png", "nonretina/replay_button_pressed.png", CC_CALLBACK_1( Mainscene::GameRestart, this) );
@@ -558,4 +591,13 @@ void Mainscene::CatchBoom()
     
     _Kuma->runAction(Sequence::create(action,CallFunc::create([this]{ _IsCrash = false; }), nullptr));
 
+}
+
+float Mainscene::getRandom(float min, float max)
+{
+    float random = 0;
+    
+    
+    
+    return random;
 }

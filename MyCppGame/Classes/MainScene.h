@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "cocos2d.h"
+#include <random>
 #include "TitleScene.h"
 #include "Menu.h"
 //#include "MenuItem.h"
@@ -37,6 +38,9 @@ public:
     //利用创建的工厂方法来构造此类
     CREATE_FUNC(Mainscene);
 
+    //Get a random between min to max
+    float getRandom(float min, float max);
+    
     enum class GameSTS
     {
         title,      //标题
@@ -53,11 +57,17 @@ public:
     //getKuma(),setKuma()方法声明 ＊追加retain处理
     CC_SYNTHESIZE_RETAIN(cocos2d::Sprite*, _Kuma, Kuma);
     
-    //创建用于显示分数的Lable
+    //创建用于显示分数的Label
     CC_SYNTHESIZE_RETAIN(cocos2d::Label*, _ScoresLabel, ScoresLabel);
 
-	//创建用于显示时间的Lable
+    //创建用于显示高分的Label
+    CC_SYNTHESIZE_RETAIN(cocos2d::Label*, _HighScoresL, HighScoresL);
+    
+	//创建用于显示时间的Label
 	CC_SYNTHESIZE_RETAIN(cocos2d::Label*, _TimeLabel, TimeLabel);
+    
+    //创建用于存放SpriteNode的节点
+    CC_SYNTHESIZE_RETAIN(cocos2d::SpriteBatchNode*, _FruitsNode, FruitsNode);
     
     //getFruits(),setFruits()方法声明 ＊没有retain处理，主处理结束后被release！！！
     //cocos2d::Vector<T> 并不是 cocos2d::Object 的子类，
@@ -76,6 +86,8 @@ public:
     
     //增加Flag用于标志角色是否被炸弹眩晕
     CC_SYNTHESIZE(bool, _IsCrash, IsCrash);
+    
+    CC_SYNTHESIZE(std::mt19937, _MTRand, MTRand);
     
     //画面更新 ＊dt是什么？？=>deltaTime =>单位为秒（例如：0.3123秒）
     //函数名称updata不可以随便改动，因为需要使用scheduleUpdata方法进行登录
