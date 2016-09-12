@@ -22,7 +22,25 @@ const int ACTIVE_ENABLE_OFFSET = 30;
 //一局游戏的时间
 const int GAME_TIME_SECOND = 10;
 
+//UserDefault存取数据用Key
 const char* HIGHSCORES = "highscroesKey";
+
+//金苹果出现的基础概率
+const float GOLDEN_PROBABILITY_BASE = 0.02;
+
+//金苹果出现概率增加幅度
+//增量式变化
+const float GOLDEN_PROBABILITY_RATE = 0.005;
+
+//炸弹出现的基础概率
+const float BOMB_PROBABILITY_BASE   = 0.02;
+
+//炸弹出现的概率增加幅度
+const float BOMB_PROBABILITY_RATE   = 0.005;
+
+//普通水果的数量
+//意义何在?
+const int   FRUITS_COUNT            = 5;
 
 Mainscene::Mainscene()
 :_Kuma(nullptr)
@@ -278,15 +296,38 @@ void Mainscene::FinishForGame()
 
 Sprite* Mainscene::addFruits()
 {
+
     auto size       = Director::getInstance()->getWinSize();
     
-    //随机获取一个数字，范围是0～COUNT_MAX（最大水果数）
-    int  Type       = rand() % static_cast<int>(FruitsType::COUNT_MAX);
+	//
+	float rand = this->getRandom(0, 1);
     
+    //随机获取一个数字，范围是0～COUNT_MAX（最大水果数）
+    int  Type       = 0;
+	float goldenP = GOLDEN_PROBABILITY_BASE + ( GOLDEN_PROBABILITY_RATE * ( GAME_TIME_SECOND - _Time ) );
+	float bombP = BOMB_PROBABILITY_BASE + ( BOMB_PROBABILITY_RATE * ( GAME_TIME_SECOND - _Time ) );
+
+	if( rand < goldenP )
+	{
+		//概率小于金苹果时候,掉落金苹果
+		Type = FruitsType::GOLDEN;
+	}
+	else if( rand < (goldenP+bombP) )
+	{
+		//概率小于炸弹高于金苹果时候,掉落金苹果
+		Type = FruitsType::BOMB;
+	}
+	else
+	{
+		//其余时候随机产生普通水果
+		Type = (int)this->getRandom(0, FRUITS_COUNT-1);
+	}
+
     //根据获得的数字创建文件名，水果枚举列表需要和图片文件的序号对应
     //std::string filename = StringUtils::format("nonretina/fruit%d.png",Type);
     //auto fruits     = Sprite::create(filename);
     
+    //从载入的图片集中取出水果的图片
     auto fruitW     = (_FruitsNode->getTextureAtlas()->getTexture()->getContentSize().width)
                         /static_cast<int>(FruitsType::COUNT_MAX);
     auto fruitH     = _FruitsNode->getTextureAtlas()->getTexture()->getContentSize().height;
@@ -597,7 +638,9 @@ float Mainscene::getRandom(float min, float max)
 {
     float random = 0;
     
+    std::uniform_real_distribution<float> dest(min, max);
     
+    random = dest(_MTRand);
     
     return random;
 }

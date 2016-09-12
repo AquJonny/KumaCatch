@@ -8,6 +8,9 @@
 
 Private inheritance here hides part of interface from Director.
 */
+
+#define ResolutionType Portait
+
 class  AppDelegate : private cocos2d::Application
 {
 public:
