@@ -79,7 +79,7 @@ void TitleScene::GameStart(Ref* pSender)
 	
 	auto active = TransitionProgressRadialCCW::create(1.0f, scene);
 	
-	auto director = Director::getInstance();
+	auto director = Director::getInstance();        
 	
 	director->replaceScene(active);
 }

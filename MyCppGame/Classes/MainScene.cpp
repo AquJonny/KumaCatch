@@ -20,7 +20,7 @@ const int FRUITS_REFRESH_RATE = 20;
 const int ACTIVE_ENABLE_OFFSET = 30;
 
 //一局游戏的时间
-const int GAME_TIME_SECOND = 10;
+const int GAME_TIME_SECOND = 60;
 
 //UserDefault存取数据用Key
 const char* HIGHSCORES = "highscroesKey";
@@ -97,8 +97,6 @@ bool Mainscene::init()
     
     //创建角色（主角）
     this->setKuma(Sprite::create("nonretina/player.png"));
-    _Kuma->setPosition(Point(size.width/2.0, size.height - 450));
-    this->addChild(_Kuma);
     
     //为角色添加动画
     //如何添加动画角色？？？SpriteCatch？SpriteNode？
@@ -137,6 +135,11 @@ bool Mainscene::init()
     //运行动作
     _Kuma->runAction(acRea);
     
+    auto KumaSize = _Kuma->getContentSize();
+    
+    _Kuma->setPosition(Point(size.width/2.0, KumaSize.height/2.0));
+    this->addChild(_Kuma);
+    
     //加载水果SpriteNode
     auto fruitSpriteNode = SpriteBatchNode::create("nonretina/fruits.png");
     this->addChild(fruitSpriteNode);
@@ -164,7 +167,7 @@ bool Mainscene::init()
     TouchEvent->onTouchBegan =
         [](Touch* touch, Event* event)
     {
-        //log("Touch at x:%f, y:%f", touch->getLocation().x, touch->getLocation().y);
+        log("Touch at x:%f, y:%f", touch->getLocation().x, touch->getLocation().y);
         return true;
     };
     
@@ -310,12 +313,12 @@ Sprite* Mainscene::addFruits()
 	if( rand < goldenP )
 	{
 		//概率小于金苹果时候,掉落金苹果
-		Type = FruitsType::GOLDEN;
+        Type = static_cast<int>(FruitsType::GOLDEN);
 	}
 	else if( rand < (goldenP+bombP) )
 	{
 		//概率小于炸弹高于金苹果时候,掉落金苹果
-		Type = FruitsType::BOMB;
+		Type = static_cast<int>(FruitsType::BOMB);
 	}
 	else
 	{
@@ -337,9 +340,11 @@ Sprite* Mainscene::addFruits()
     //设置Tag便于之后查找
     fruits->setTag(Type);
     
+    auto playerSize = _Kuma->getContentSize();
+    
     //Y轴固定，X轴随机的方式放置水果
-    auto fruitsXPoint    = rand() % static_cast<int>(size.width - ( ACTIVE_ENABLE_OFFSET * 2 ));
-    fruits->setPosition(Point(fruitsXPoint + ACTIVE_ENABLE_OFFSET, size.height - FRUITS_TOP_POINT));
+    auto fruitsXPoint    = getRandom( 0, size.width - playerSize.width);
+    fruits->setPosition(Point(fruitsXPoint + (playerSize.width/2.0), size.height - FRUITS_TOP_POINT));
 
     //把水果放到屏幕中，将屏幕中存在的水果保存至Fruits的仓库中
     //this->addChild(fruits);

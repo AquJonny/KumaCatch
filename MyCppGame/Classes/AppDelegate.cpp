@@ -6,14 +6,16 @@
 
 USING_NS_CC;
 
+//定义屏幕分辨率类型 横屏 or 竖屏
+#define Portait
 
-#if (ResolutionType = Landscape)
+#ifdef Landscape
 //Landscape
 static cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
 static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
 static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
-#elseif (ResolutionType = Portait)
+#else //if (ResolutionType == Portait)
 //Portait
 static cocos2d::Size designResolutionSize = cocos2d::Size(320, 480);
 static cocos2d::Size smallResolutionSize = cocos2d::Size(320, 480);
@@ -81,15 +83,19 @@ bool AppDelegate::applicationDidFinishLaunching() {
     //1）EXACT_FIT 整个游戏内容都会在屏幕内可见，并且不用提供比例系数。x,y会被拉伸，使内容铺满屏幕，所以可能会出现形变，所有的应用程序看起来可能会是拉伸或者压缩的。
     //2）NO_BORDER 一个方向铺满屏幕，另外一个方向超出屏幕，不会变形，但是可能有一些裁剪。
     //3）SHOW_ALL 该模式会尽可能按原始宽高比放大游戏世界，同时使得游戏内容全部可见。内容不会形变，不过可能会出现两条黑边，即屏幕中会有留白。
-    //4）IXED_WIDTH 该模式会横向放大游戏世界内的内容以适应屏幕的宽度，纵向按原始宽高比放大。
+    //4）FIXED_WIDTH 该模式会横向放大游戏世界内的内容以适应屏幕的宽度，纵向按原始宽高比放大。
     //5）FIXED_HEIGHT 与上一中模式相反。
     
 
-	//setContentScaleFactor画面放大系数=画面宽(高)度／素材宽(高)度
-    auto frameSize = glview->getFrameSize();
+	//setContentScaleFactor画面放大系数=素材宽(高)度／画面宽(高)度
+    //不好用。。因为所有的东西都会被这个系数等比放大，包括精灵的显示（但是可视面积却不会放大），坐标系也会混乱
+    //设定坐标时候尽量使用已知的参照物进行计算获得相对坐标。
+    //auto frameSize = glview->getFrameSize();
     // if the frame's height is larger than the height of medium size.
     
-        director->setContentScaleFactor(MIN(frameSize.height/designResolutionSize.height, frameSize.width/designResolutionSize.width));
+    //    director->setContentScaleFactor( MIN(designResolutionSize.height/frameSize.height, designResolutionSize.width/frameSize.width));
+
+    //auto contentSize = director->getContentScaleFactor();
 
     /*
     if (frameSize.height > mediumResolutionSize.height)
