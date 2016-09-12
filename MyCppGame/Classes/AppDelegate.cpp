@@ -88,6 +88,10 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	//setContentScaleFactor画面放大系数=画面宽(高)度／素材宽(高)度
     auto frameSize = glview->getFrameSize();
     // if the frame's height is larger than the height of medium size.
+    
+        director->setContentScaleFactor(MIN(frameSize.height/designResolutionSize.height, frameSize.width/designResolutionSize.width));
+
+    /*
     if (frameSize.height > mediumResolutionSize.height)
     {        
         director->setContentScaleFactor(MIN(largeResolutionSize.height/designResolutionSize.height, largeResolutionSize.width/designResolutionSize.width));
@@ -102,6 +106,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     {        
         director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height, smallResolutionSize.width/designResolutionSize.width));
     }
+	*/
 
     register_all_packages();
 
