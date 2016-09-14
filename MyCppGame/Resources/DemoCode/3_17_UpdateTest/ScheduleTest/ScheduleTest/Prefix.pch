@@ -1,0 +1,8 @@
+//
+// Prefix header for all source files of the 'ScheduleTest' target in the 'ScheduleTest' project
+//
+
+#ifdef __OBJC__
+	#import <Foundation/Foundation.h>
+	#import <UIKit/UIKit.h>
+#endif
